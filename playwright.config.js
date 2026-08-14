@@ -23,7 +23,7 @@ export default defineConfig({
   reporter: 'html',
 
   use: {
-    headless: false,
+    headless: !!process.env.CI,
 
     //baseURL: 'https://suite8demo.suiteondemand.com/',
 
