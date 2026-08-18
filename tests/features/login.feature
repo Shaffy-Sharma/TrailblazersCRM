@@ -4,5 +4,3 @@ Feature: Login
     Given The user is on the login page
     When The user enters "will" and "will"
     Then The user should see the dashboard
-
-  
