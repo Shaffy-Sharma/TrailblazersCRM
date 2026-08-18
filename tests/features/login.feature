@@ -1,9 +1,8 @@
 Feature: Login
 
-  Background:
-    Given user launch browser and enter url
-
   Scenario: Login with valid username and password
-    Given user is on login page
+    Given The user is on the login page
+    When The user enters "will" and "will"
+    Then The user should see the dashboard
 
   

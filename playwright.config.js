@@ -5,12 +5,12 @@ import { defineBddConfig } from 'playwright-bdd';
 
 const testDir = defineBddConfig({
   features: 'tests/features/**/*.feature',
-  steps: ['tests/step-definitions/**/*.js', 'tests/hooks/**/*.js'],
+  steps: ['tests/step-definitions/**/*.js'],
 });
 
 export default defineConfig({
 
-  testDir,
+  testDir: testDir,
 
   fullyParallel: true,
 
@@ -25,7 +25,7 @@ export default defineConfig({
   use: {
     headless: !!process.env.CI,
 
-    //baseURL: 'https://suite8demo.suiteondemand.com/',
+    baseURL: process.env.BASE_URL,
 
     screenshot: 'only-on-failure',
 
