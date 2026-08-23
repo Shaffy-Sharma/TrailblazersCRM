@@ -3,7 +3,7 @@ const { expect } = require('@playwright/test');
 
 const { Given, When, Then } = createBdd();
 
-const LoginPage = require('../pages/loginPage.js');
+const LoginPage = require('../pages/LoginPage.js');
 
 
 Given('user launch browser and enter url', async function ({ page }) {
