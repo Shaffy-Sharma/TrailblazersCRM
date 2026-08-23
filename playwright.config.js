@@ -1,4 +1,5 @@
 // @ts-check
+import 'dotenv/config';
 
 import { defineConfig, devices } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
@@ -25,17 +26,32 @@ export default defineConfig({
   use: {
     headless: !!process.env.CI,
 
-    //baseURL: 'https://suite8demo.suiteondemand.com/',
+    baseURL: process.env.BASE_URL,
 
     screenshot: 'only-on-failure',
 
     trace: 'on-first-retry',
   },
 
-  projects: [
+    projects: [
+    {
+      name: 'setup',
+      testDir: './tests',
+      testMatch: /auth\.setup\.js/,
+    },
+    {
+      name: 'login-tests',
+      grep: /@auth/,
+      use: { ...devices['Desktop Chrome'] },
+    },
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      grepInvert: /@auth/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
     },
   ],
 
