@@ -1,10 +1,12 @@
 import { createBdd } from 'playwright-bdd';
 import { expect } from '@playwright/test';
+import { readExcel } from '../../utils/excelReader.js';
 
 //const { createBdd } = require('playwright-bdd');
 //const { expect } = require('@playwright/test');
 
 const { Given, When, Then } = createBdd();
+const accountData = readExcel('Accounts');
 
 Given('Create Account: the user loads SuiteCRM', async ({ page }) => {
   await page.goto('https://suite8demo.suiteondemand.com/#/Login'); 
@@ -29,11 +31,12 @@ Given('the user clicks the Create Account button', async ({ page }) => {
 });
 
 When('the user clicks Save button after entering valid information in all mandatory fields', async ({ page }) => {
-   await page.getByRole('textbox').nth(1).fill('ABC Technologies');
+  const data = accountData.find(row => row.TestCase === 'TC001');
+   await page.getByRole('textbox').nth(1).fill(data.AccountName);
    await page.getByRole('button', { name: 'Save' }).click();
 });
 
 Then('the account should be created successfully', async ({ page }) => {
-  await expect(page.locator('scrm-dynamic-label').getByText('ABC Technologies')).toBeVisible();
+  await expect(page.locator('scrm-dynamic-label').getByText(accountData.find(row => row.TestCase === 'TC001').ExpectedResult)).toBeVisible();
   //await page.getByText('ABC Technologies', { exact: true }).toBeVisible();
 });
