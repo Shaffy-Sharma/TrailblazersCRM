@@ -1,0 +1,4 @@
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+SuiteCRM dashboard opened
+Admin privileges available
+Import Calls opened

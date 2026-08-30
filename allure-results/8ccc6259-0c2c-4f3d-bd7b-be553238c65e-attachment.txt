@@ -1,0 +1,3 @@
+◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+SuiteCRM dashboard opened
+Admin privileges available
