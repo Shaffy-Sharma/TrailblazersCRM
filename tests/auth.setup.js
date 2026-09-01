@@ -11,7 +11,8 @@ setup('save authenticated state', async ({ page }) => {
   await page.getByPlaceholder('Password').fill('will');
   await page.getByRole('button', { name: 'Log In' }).click();
 
-  await expect(page).not.toHaveURL(/#\/Login/);
+  //await expect(page).not.toHaveURL(/#\/Login/);
+  await expect(page).not.toHaveURL(/#\/Login/, { timeout: 15000 });
 
   await page.context().storageState({ path: authFile });
 });

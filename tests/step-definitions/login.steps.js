@@ -1,7 +1,8 @@
 const { createBdd } = require('playwright-bdd');
 const { expect } = require('@playwright/test');
 
-const { Given, When, Then } = createBdd();
+const { test } = require('../fixtures/fixtures.js');
+const { Given, When, Then } = createBdd(test);
 
 const LoginPage = require('../pages/LoginPage.js');
 
