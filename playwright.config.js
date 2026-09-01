@@ -7,6 +7,8 @@ import { defineBddConfig } from 'playwright-bdd';
 const testDir = defineBddConfig({
   features: 'tests/features/**/*.feature',
   steps: ['tests/step-definitions/**/*.js', 'tests/hooks/**/*.js'],
+  outputDir: '.features-gen',
+  importTestFrom: 'tests/fixtures/fixtures.js',
 });
 
 export default defineConfig({
@@ -23,17 +25,14 @@ export default defineConfig({
 
   reporter: 'html',
 
-  use: {
-    headless: !!process.env.CI,
+ use: {
+  headless: false,
+  baseURL: process.env.BASE_URL,
+  screenshot: 'only-on-failure',
+  trace: 'on-first-retry',
+},
 
-    baseURL: process.env.BASE_URL,
-
-    screenshot: 'only-on-failure',
-
-    trace: 'on-first-retry',
-  },
-
-    projects: [
+  projects: [
     {
       name: 'setup',
       testDir: './tests',
@@ -45,7 +44,8 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
-      name: 'chromium',
+      name: 'quotes',
+      testMatch: /quotes\.feature\.spec\.js/,
       grepInvert: /@auth/,
       use: {
         ...devices['Desktop Chrome'],
@@ -53,6 +53,16 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
+    {
+      name: 'documents',
+      testMatch: /documents\.feature\.spec\.js/,
+      grepInvert: /@auth/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+          importTestFrom: 'tests/fixtures/fixtures.js',
+      },
+      dependencies: ['setup'],
+    },
   ],
-
 });
