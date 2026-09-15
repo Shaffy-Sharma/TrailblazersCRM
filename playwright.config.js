@@ -28,15 +28,16 @@ export default defineConfig({
   workers: process.env.CI ? 1 : 2,
 
 
-  reporter: [
-    ['list'],
-    ['allure-playwright', {
-      resultsDir: 'allure-results',
-      detail: true,
-      suiteTitle: false,
-      clean: true,
-    }],
-  ],
+reporter: [
+  ['list'],
+  ['html', { open: 'never' }],
+  ['allure-playwright', {
+    resultsDir: 'allure-results',
+    detail: true,
+    suiteTitle: false,
+    clean: true,
+  }],
+],
 
  use: {
     headless: !!process.env.CI,
