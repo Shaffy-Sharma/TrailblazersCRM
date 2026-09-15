@@ -1,4 +1,4 @@
-const { test : base } = require('playwright-bdd');
+const { test: base } = require('playwright-bdd');
 const LoginPage = require('../pages/LoginPage.js');
 const QuotesPage = require('../pages/QuotesPage.js');
 const DocumentsPage = require('../pages/DocumentsPage.js');

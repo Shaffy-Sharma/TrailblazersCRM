@@ -21,21 +21,30 @@ this.root = page;
     this.templateCheckbox = this.root.locator('.checkmark');
     this.expirationDateField = this.root.locator("//scrm-dynamic-field[@class='dynamic-field dynamic-field-mode-edit dynamic-field-name-exp_date dynamic-field-type-date ng-star-inserted']//input[@placeholder='yyyy-mm-dd']");
 
-    this.saveButton = this.root.getByRole('button', { name: 'Save' }).first();
-    this.cancelButton = this.root.getByRole('button', { name: 'Cancel' }).first();
+    this.saveButton = this.root
+      .getByRole('button', { name: 'Save' })
 
-    this.fileRequiredError = this.root.getByText(/file.*required|required.*file|missing required/i).first();
+    this.cancelButton = this.root
+      .getByRole('button', { name: 'Cancel' })
+
+    this.fileRequiredError = this.root.getByText('Missing required field: File', { exact: true });
     this.requiredIndicator = this.root.locator('text=*').first();
   }
 
   async navigateToCreateDocumentPage() {
     await this.page.goto('/#/documents/edit?return_module=Documents&return_action=DetailView');
+       // await this.page.pause();
   }
 
   async waitForCreateDocumentPageToLoad() {
-    //await this.page.pause(5000); // Wait for 5 seconds to ensure the page is fully loaded
-    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForURL(/#\/documents\/edit/i);
     await this.pageHeader.waitFor({ state: 'visible' });
+    await this.overviewTab.waitFor({ state: 'visible' });
+    await this.otherTab.waitFor({ state: 'visible' });
+    await this.documentNameField.waitFor({ state: 'visible' });
+    await this.documentTypeField.waitFor({ state: 'visible' });
+    await this.publishDateField.waitFor({ state: 'visible' });
+    await this.assignedToField.waitFor({ state: 'visible' });
   } 
     
 
@@ -45,6 +54,7 @@ this.root = page;
   }
 
   async verifyOverviewAndFieldsDisplayed() {
+    await this.waitForCreateDocumentPageToLoad();
     await expect(this.overviewTab).toBeVisible();
     await expect(this.otherTab).toBeVisible();
     await expect(this.documentNameField).toBeVisible();
@@ -70,6 +80,8 @@ this.root = page;
   
 
   async uploadFile(filePath) {
+   //  await this.page.pause();
+     console.log(`Uploading file: ${filePath}`);
     await this.fileUpload.setInputFiles(filePath);
   }
 
@@ -97,11 +109,31 @@ this.root = page;
   }
 
   async fillAssignedTo(name) {
-    const value = String(name || '').replace(/\s+/g, '');
-    if (!value) return;
+    const expectedValue = String(name || '').replace(/\s+/g, '');
+    if (!expectedValue) return;
 
+    await this.assignedToField.waitFor({ state: 'visible' });
+
+    const currentValue = (
+      await this.assignedToField.getAttribute('aria-label') ||
+      await this.assignedToField.textContent() ||
+      ''
+    ).replace(/\s+/g, '');
+
+    // Do not click the dropdown if the requested user is already selected.
+    if (currentValue === expectedValue) return;
+
+    await this.assignedToField.scrollIntoViewIfNeeded();
+    await expect(this.assignedToField).toBeEnabled();
     await this.assignedToField.click();
-    await this.page.getByRole('option', { name: value, exact: true }).click();
+
+    const option = this.page.getByRole('option', {
+      name: String(name).trim(),
+      exact: true,
+    });
+
+    await option.waitFor({ state: 'visible' });
+    await option.click();
   }
 
   async selectStatus(status) {
@@ -142,40 +174,36 @@ this.root = page;
   }
 
   async clickSave() {
+    // await this.page.waitForLoadState('networkidle'); // let any pending Angular requests finish
+    await expect(this.saveButton).toBeVisible();
+    await expect(this.saveButton).toBeEnabled();
     await this.saveButton.click();
   }
 
   async clickCancel() {
+    this.page.once('dialog', async dialog => {
+      await dialog.accept();
+    });
+
+    await expect(this.cancelButton).toBeVisible();
+    await expect(this.cancelButton).toBeEnabled();
     await this.cancelButton.click();
   }
 
-//   async fillMandatoryFields() {
-//     await this.uploadFile('tests/test-data/DocumentData1.txt');
-//     await this.fillDocumentName('Test Document');
-//     await this.selectDocumentType('PDF');
-//     await this.fillPublishDate('2026-08-31');
-//     await this.fillRevision('1');
-//     await this.fillAssignedTo('Will Westin');
-//   }
-
-//   async fillAllFields() {
-//     await this.fillMandatoryFields();
-//     await this.selectStatus('Active');
-//     await this.fillRevision('2');
-//     await this.setTemplateChecked(false);
-//     await this.fillExpirationDate('2026-12-31');
-//     await this.selectCategory('General');
-//     await this.selectSubCategory('Other');
-//   }
 
   async verifyMissingFileValidation() {
     await expect(this.fileRequiredError).toBeVisible();
   }
 
   async verifyDocumentCreationSuccess() {
-    //await expect(this.page).toHaveURL(/documents/i);
-     await expect(this.page).toHaveURL(/\/documents\/record\//i);
-    await expect(this.page.getByText('Document Revisions', { exact: true }).first()).toBeVisible();
+    await this.page.waitForURL(/#\/documents\/record\//i, {
+      timeout: 15000,
+       waitUntil: 'domcontentloaded',
+    });
+
+    await expect(
+      this.page.getByText('Document Revisions', { exact: true }).first()
+    ).toBeVisible();
   }
 
   async verifyRedirectToDocumentList() {

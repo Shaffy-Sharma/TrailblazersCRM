@@ -4,7 +4,7 @@ class QuotesPage {
     constructor(page) {
         this.page = page;
 
-        this.pageHeader = page.frameLocator('[src*="index.php"]').locator(':text-is("QUOTES")');
+        this.pageHeader = page.frameLocator('[src*="index.php"]').locator(':text("QUOTES")');
         this.createHeader = page.frameLocator('[src*="index.php"]').getByText('CREATE', { exact: true });
         this.overviewTab = page.frameLocator('[src*="index.php"]').getByText('Overview');
         this.titleField = page.frameLocator('[src*="index.php"]').locator('#name')
@@ -17,9 +17,11 @@ class QuotesPage {
         this.paymentTermsField = page.frameLocator('[src*="index.php"]').locator('#term');
         this.approvalStatusField = page.frameLocator('[src*="index.php"]').locator('#approval_status');
         this.approvalIssuesField = page.frameLocator('[src*="index.php"]').locator('#approval_issue');
+        this.validationMessage=page.frameLocator('[src*="index.php"]').getByText('Missing required field: Title', { exact: true })
 
         this.saveButton = page.frameLocator('[src*="index.php"]').getByTitle('Save');
-        this.cancelButton = page.frameLocator('[src*="index.php"]').getByTitle('Cancel [Alt+l]', { exact: true });
+        //this.cancelButton = page.frameLocator('[src*="index.php"]').getByTitle('Cancel [Alt+l]', { exact: true });
+        this.cancelButton = page.frameLocator('[src*="index.php"]').getByTitle(/^Cancel\b/);
 
     }
 
@@ -78,13 +80,22 @@ class QuotesPage {
     }
 
     async clickCancel() {
-        await this.cancelButton.click();
+        this.page.once('dialog', async dialog => {
+            if (dialog.type() === 'beforeunload') {
+                await dialog.accept(); // Selects "Leave"
+            }
+        });
+
+        await this.cancelButton.click(); // First SuiteCRM Cancel button
     }
 
     async verifyCreateQuotePageDisplayed() {
-        //await expect(this.pageHeader).toBeVisible();
-        //await expect(this.createHeader).toBeVisible();
-        //await expect(this.overviewTab).toBeVisible();
+        await this.pageHeader.waitFor({ state: 'visible' });
+        await this.createHeader.waitFor({ state: 'visible' });
+        await this.overviewTab.waitFor({ state: 'visible' });
+        await expect(this.pageHeader).toBeVisible();
+        await expect(this.createHeader).toBeVisible();
+        await expect(this.overviewTab).toBeVisible();
     }
 
     async waitForCreateQuotePageToLoad() {
@@ -94,8 +105,22 @@ class QuotesPage {
     async verifyOverviewSectionDisplayed() {
         await expect(this.overviewTab).toBeVisible();
     }
+    async waitForCreateQuotePageToLoad() {
+    await this.overviewTab.waitFor({ state: 'visible' });
+    await this.titleField.waitFor({ state: 'visible' });
+    await this.quoteNumberField.waitFor({ state: 'visible' });
+    await this.validUntilField.waitFor({ state: 'visible' });
+    await this.assignedToField.waitFor({ state: 'visible' });
+    await this.opportunityField.waitFor({ state: 'visible' });
+    await this.quoteStageField.waitFor({ state: 'visible' });
+    await this.invoiceStatusField.waitFor({ state: 'visible' });
+    await this.paymentTermsField.waitFor({ state: 'visible' });
+    await this.approvalStatusField.waitFor({ state: 'visible' });
+    await this.approvalIssuesField.waitFor({ state: 'visible' });
+}
 
     async verifyQuoteFieldsDisplayed() {
+        await this.waitForCreateQuotePageToLoad();
         await expect(this.titleField).toBeVisible();
         await expect(this.quoteNumberField).toBeVisible();
         await expect(this.validUntilField).toBeVisible();
@@ -116,6 +141,7 @@ class QuotesPage {
     }
 
     async verifyValidationMessageDisplayed() {
+        
         await expect(this.validationMessage).toBeVisible();
     }
 }
